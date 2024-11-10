@@ -97,35 +97,55 @@ public partial class MainForm : Form
     {
         if (dataGridViewBooks.SelectedRows.Count > 0)
         {
-            var selectedBook = (Book)dataGridViewBooks.SelectedRows[0].DataBoundItem;
-            SimpleView simpleView = new SimpleView(selectedBook);
-            if (simpleView.ShowDialog() == DialogResult.OK)
+            var selectedRow = dataGridViewBooks.SelectedRows[0];
+            var selectedTitle = selectedRow.Cells["Title"].Value.ToString();
+            var selectedAuthor = selectedRow.Cells["Author"].Value.ToString();
+
+            // Find the original book from the books list
+            var selectedBook = books.FirstOrDefault(b => b.Title == selectedTitle && b.Author == selectedAuthor);
+            if (selectedBook != null)
             {
-                var index = books.IndexOf(selectedBook);
-                books[index] = simpleView.Book;
-                SaveBooks();
-                FilterBooks();
+                SimpleView simpleView = new SimpleView(selectedBook);
+                if (simpleView.ShowDialog() == DialogResult.OK)
+                {
+                    var index = books.IndexOf(selectedBook);
+                    books[index] = simpleView.Book;
+                    SaveBooks();
+                    FilterBooks();
+                }
             }
         }
     }
+
 
     private void btnDelete_Click(object sender, EventArgs e)
     {
         if (dataGridViewBooks.SelectedRows.Count > 0)
         {
-            var selectedBook = (Book)dataGridViewBooks.SelectedRows[0].DataBoundItem;
-            //We want to prompt the user so that they dont accidently just delete the book
-            var confirmResult = MessageBox.Show($"Are you sure you want to delete '{selectedBook.Title}'?",
-                                                 "Confirm Delete",
-                                                 MessageBoxButtons.YesNo);
-            if (confirmResult == DialogResult.Yes)
+            // Get the title and author from the selected row
+            var selectedRow = dataGridViewBooks.SelectedRows[0];
+            var selectedTitle = selectedRow.Cells["Title"].Value.ToString();
+            var selectedAuthor = selectedRow.Cells["Author"].Value.ToString();
+
+            // Find the corresponding book in the books list
+            var selectedBook = books.FirstOrDefault(b => b.Title == selectedTitle && b.Author == selectedAuthor);
+
+            if (selectedBook != null)
             {
-                books.Remove(selectedBook);
-                SaveBooks();
-                FilterBooks();
+                // Prompt the user to confirm deletion
+                var confirmResult = MessageBox.Show($"Are you sure you want to delete '{selectedBook.Title}'?",
+                                                     "Confirm Delete",
+                                                     MessageBoxButtons.YesNo);
+                if (confirmResult == DialogResult.Yes)
+                {
+                    books.Remove(selectedBook);
+                    SaveBooks();
+                    FilterBooks();
+                }
             }
         }
     }
+
 
     private void SaveBooks()
     {
